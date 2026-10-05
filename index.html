@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carebridge — Your Accessible Healthcare Assistant</title>
+  <meta name="description" content="Carebridge scans prescriptions and medical reports, translates them into your language, and helps you stay on track with medicine and appointments." />
+
+  <!-- Atkinson Hyperlegible Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Tesseract.js OCR Engine for real in-browser Aadhaar text recognition -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Skip link: lets keyboard/screen-reader users jump past the nav straight to content -->
+  <a class="skip-link" href="#main" data-i18n="skip_to_content">Skip to main content</a>
+
+  <!-- ============================= NAVIGATION ============================= -->
+  <header class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#top" class="nav__brand">
+        <span class="nav__brand-mark" aria-hidden="true">
+          <!-- Tiny bridge glyph used as the brand mark -->
+          <svg viewBox="0 0 40 24" width="30" height="18">
+            <path d="M2 20 C 2 8, 10 2, 20 2 C 30 2, 38 8, 38 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <line x1="8" y1="20" x2="8" y2="13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <line x1="32" y1="20" x2="32" y2="13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Carebridge
+      </a>
+
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#top" data-i18n="nav_home">Home</a>
+        <a href="#settings" data-i18n="nav_settings">Settings</a>
+        <a href="care.html" id="nav-care-link" class="is-hidden" data-i18n="nav_care">Care</a>
+      </nav>
+
+      <div class="nav__lang">
+        <label for="lang-select" class="visually-hidden" data-i18n="settings_lang_label">Language</label>
+        <select id="lang-select" aria-label="Choose language">
+          <option value="en" selected>English</option>
+          <option value="es">Español</option>
+          <option value="hi">हिन्दी</option>
+          <option value="fr">Français</option>
+        </select>
+      </div>
+
+      <div class="nav__auth" id="auth-container">
+        <button type="button" id="auth-trigger" class="btn btn--auth" aria-haspopup="dialog" aria-controls="auth-modal" aria-expanded="false">
+          <span class="auth-avatar" id="auth-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <span id="auth-trigger-label" data-i18n="auth_trigger">Log in / Sign up</span>
+          <span class="nav__auth-chevron" id="auth-chevron" aria-hidden="true" hidden>▼</span>
+        </button>
+
+        <!-- User Dropdown Menu (visible when logged in and clicked) -->
+        <div class="user-dropdown" id="user-dropdown" role="menu" hidden>
+          <div class="user-dropdown__header">
+            <div class="user-dropdown__avatar" id="dropdown-avatar">A</div>
+            <div class="user-dropdown__info">
+              <p class="user-dropdown__name" id="dropdown-user-name">User Name</p>
+              <p class="user-dropdown__meta" id="dropdown-user-meta">Age: — | Verified Patient</p>
+            </div>
+          </div>
+          <div class="user-dropdown__body">
+            <p class="user-dropdown__addr" id="dropdown-user-addr">—</p>
+          </div>
+          <div class="user-dropdown__actions">
+            <a href="care.html" class="user-dropdown__item" id="dropdown-care-btn" role="menuitem">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <span data-i18n="dropdown_care">Care Health Profile</span>
+            </a>
+            <button type="button" class="user-dropdown__item" id="dropdown-switch-btn" role="menuitem">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+              <span data-i18n="dropdown_switch">Switch Account</span>
+            </button>
+            <button type="button" class="user-dropdown__item user-dropdown__item--logout" id="dropdown-logout-btn" role="menuitem">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span data-i18n="dropdown_logout">Log out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================= AUTH MODAL ============================= -->
+  <div class="modal-backdrop" id="auth-backdrop" hidden></div>
+  <div class="modal" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" hidden>
+    <button type="button" class="modal__close" id="auth-close" aria-label="Close">&times;</button>
+
+    <!-- Step: choose login or signup -->
+    <div class="modal__panel" data-step="choice">
+      <div class="modal__badge" data-i18n="modal_badge">Secure Healthcare Access</div>
+      <h2 id="auth-modal-title" data-i18n="auth_modal_title">Welcome to Carebridge</h2>
+      <p class="modal__hint" data-i18n="auth_modal_hint">Please select an option to access your personalized care dashboard.</p>
+      <div class="modal__choice-actions">
+        <button type="button" class="btn btn--primary btn--lg" data-goto="login">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          <span data-i18n="btn_have_account">I have an account (Log In)</span>
+        </button>
+        <button type="button" class="btn btn--ghost-dark btn--lg" data-goto="signup-upload">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <span data-i18n="btn_create_account">Create an account (Sign Up)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step: login -->
+    <div class="modal__panel" data-step="login" hidden>
+      <h2 data-i18n="login_title">Log in to Carebridge</h2>
+      <p class="modal__hint" data-i18n="login_hint">Sign in with the Google account linked to your Carebridge profile.</p>
+      <button type="button" class="btn btn--google" id="login-google-btn">
+        <span class="google-g" aria-hidden="true">G</span> <span data-i18n="continue_google">Continue with Google</span>
+      </button>
+      <div class="modal__notice" id="login-demo-notice">
+        <p data-i18n="login_demo_notice"><strong>Sign In Note:</strong> Signing in will load your linked patient profile and Care assessment summary.</p>
+      </div>
+      <p class="modal__error" id="login-error" hidden data-i18n="login_error">No existing account found. Please click "Create an account" first.</p>
+      <button type="button" class="modal__link-btn" data-goto="choice" data-i18n="btn_back_options">&larr; Back to options</button>
+    </div>
+
+    <!-- Step: signup — upload ID -->
+    <div class="modal__panel" data-step="signup-upload" hidden>
+      <div class="modal__step-pill" data-i18n="step1_pill">Step 1 of 2: ID Verification</div>
+      <h2 data-i18n="upload_title">Upload Aadhaar Card</h2>
+      <p class="modal__hint" data-i18n="upload_hint">Upload a clear photo of your Aadhaar card. Our AI/OCR extracts your Name, Date of Birth, and Address. <em>Your 12-digit Aadhaar number is never stored per UIDAI regulations.</em></p>
+      
+      <label class="upload-drop" for="aadhar-file" id="upload-dropzone">
+        <input type="file" id="aadhar-file" accept="image/*" class="visually-hidden" />
+        <div class="upload-drop__content">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" class="upload-drop__icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span id="upload-drop-text" data-i18n="upload_drop_text">Drag & drop or tap to choose photo</span>
+          <span class="upload-drop__sub" data-i18n="upload_sub">Supports JPG, PNG, WebP</span>
+        </div>
+      </label>
+
+      <!-- Preview container with laser scanner overlay -->
+      <div class="upload-preview-container" id="preview-container" hidden>
+        <img id="aadhar-preview" class="upload-preview" alt="Preview of the uploaded ID" />
+        <div class="scanner-laser" id="scanner-laser" hidden>
+          <div class="scanner-laser__beam"></div>
+          <div class="scanner-laser__text" id="scanner-laser-text" data-i18n="scanner_analyzing">AI Document Scanner Analyzing…</div>
+        </div>
+      </div>
+
+      <div class="modal__sample-action">
+        <button type="button" class="btn btn--sm btn--text-accent" id="use-sample-id-btn" data-i18n="btn_sample_id">
+          ✨ Use Sample Aadhaar Card for Instant Demo
+        </button>
+      </div>
+
+      <button type="button" class="btn btn--primary btn--full" id="scan-id-btn" disabled>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+        <span data-i18n="btn_scan_doc">Scan Document with AI OCR</span>
+      </button>
+
+      <div class="scan-progress-box" id="scan-progress-box" hidden>
+        <div class="scan-progress-bar"><div class="scan-progress-fill" id="ocr-progress-fill"></div></div>
+        <p class="modal__scan-status" id="scan-status" role="status" aria-live="polite"></p>
+      </div>
+      <button type="button" class="modal__link-btn" data-goto="choice" data-i18n="btn_back">&larr; Back</button>
+    </div>
+
+    <!-- Step: signup — review extracted data + consent -->
+    <div class="modal__panel" data-step="signup-review" hidden>
+      <div class="modal__step-pill" data-i18n="step2_pill">Step 2 of 2: Review & Consent</div>
+      <h2 data-i18n="review_title">Review Extracted Details</h2>
+      <p class="modal__hint" data-i18n="review_hint">Our AI extracted the following details from your document. You can make adjustments if needed:</p>
+      
+      <div class="review-card">
+        <div class="review-field">
+          <div class="review-field__label">
+            <span data-i18n="label_name">Full Name</span>
+            <span class="badge-verified" data-i18n="badge_extracted">✓ Extracted</span>
+          </div>
+          <input type="text" class="review-input" id="review-name" placeholder="Patient Full Name" />
+        </div>
+
+        <div class="review-grid-2">
+          <div class="review-field">
+            <div class="review-field__label">
+              <span data-i18n="label_dob">Date of Birth (DOB)</span>
+              <span class="badge-verified">✓ DOB</span>
+            </div>
+            <input type="text" class="review-input" id="review-dob" placeholder="DD/MM/YYYY" />
+          </div>
+          <div class="review-field">
+            <div class="review-field__label">
+              <span data-i18n="label_age">Calculated Age</span>
+              <span class="badge-calc" data-i18n="badge_calculated">🧮 Calculated</span>
+            </div>
+            <div class="review-field__value review-field__value--highlight" id="review-age">—</div>
+          </div>
+        </div>
+
+        <div class="review-field">
+          <div class="review-field__label">
+            <span data-i18n="label_address">Address</span>
+            <span class="badge-verified" data-i18n="badge_extracted">✓ Extracted</span>
+          </div>
+          <textarea class="review-input review-input--textarea" id="review-address" rows="2" placeholder="Full residential address"></textarea>
+        </div>
+      </div>
+
+      <div class="consent-box">
+        <label class="consent-row" for="consent-checkbox">
+          <input type="checkbox" id="consent-checkbox" />
+          <span class="consent-text" data-i18n="consent_text">
+            <strong>I hereby give my explicit consent</strong> to Carebridge to securely store my name, date of birth, age, and address to setup and personalize my healthcare profile and medical summaries.
+          </span>
+        </label>
+      </div>
+
+      <button type="button" class="btn btn--google btn--full" id="signup-google-btn" disabled>
+        <span class="google-g" aria-hidden="true">G</span> <span data-i18n="continue_google">Continue with Google Sign-In</span>
+      </button>
+      <p class="consent-subnote" data-i18n="consent_subnote">Linking with Google provides secure single-sign-on for all future visits.</p>
+
+      <button type="button" class="modal__link-btn" data-goto="signup-upload" data-i18n="btn_back_upload">&larr; Back to ID Upload</button>
+    </div>
+  </div>
+
+  <main id="main">
+
+    <!-- ============================= HERO ============================= -->
+    <section class="hero" id="top">
+      <div class="hero__overlay" aria-hidden="true"></div>
+      <div class="hero__content">
+        <p class="eyebrow eyebrow--light" data-i18n="hero_eyebrow">Technology for the Forgotten</p>
+        <h1 data-i18n="hero_title">Welcome to Carebridge: Your Accessible Healthcare Assistant</h1>
+        <p class="hero__subtitle" data-i18n="hero_subtitle">
+          Snap a photo of any prescription or medical report. We read it, translate it into your language, and help you take the next step — safely and on time.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#how" data-i18n="hero_cta_primary">Get Started</a>
+          <a class="btn btn--ghost" href="#how" data-i18n="hero_cta_secondary">See How It Works</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bridge divider -->
+    <div class="bridge-divider" aria-hidden="true">
+      <svg viewBox="0 0 1440 160" preserveAspectRatio="none">
+        <path class="bridge-divider__deck" d="M0,150 C 260,40 500,10 720,10 C 940,10 1180,40 1440,150" fill="none" stroke-width="6"/>
+        <line class="bridge-divider__pylon" x1="260" y1="150" x2="260" y2="70"/>
+        <line class="bridge-divider__pylon" x1="1180" y1="150" x2="1180" y2="70"/>
+        <circle class="bridge-divider__walker" r="8" cx="0" cy="0"/>
+      </svg>
+    </div>
+
+    <!-- ============================= THE PROBLEM ============================= -->
+    <section class="section problem" aria-labelledby="problem-title">
+      <div class="section__inner problem__grid">
+        <div class="problem__image">
+          <img src="images.jpg" alt="A doctor listens to a patient's heartbeat with a stethoscope during a checkup" loading="lazy" />
+        </div>
+        <div class="problem__text">
+          <p class="eyebrow" data-i18n="problem_eyebrow">The Problem</p>
+          <h2 id="problem-title" data-i18n="problem_title">Medical words were never written for everyone</h2>
+          <p data-i18n="problem_text">
+            For elderly patients, people who read with difficulty, and those who don't speak English, a simple prescription can feel like a locked door. Confusing labels lead to missed doses, missed appointments, and real harm. Carebridge opens that door.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= HOW IT WORKS ============================= -->
+    <section class="section how" id="how" aria-labelledby="how-title">
+      <div class="section__inner">
+        <p class="eyebrow" data-i18n="how_eyebrow">How It Works</p>
+        <h2 id="how-title" data-i18n="how_title">Three simple steps</h2>
+
+        <ol class="steps">
+          <li class="steps__item">
+            <span class="steps__number" aria-hidden="true">1</span>
+            <div>
+              <h3 data-i18n="step1_title">Snap a photo</h3>
+              <p data-i18n="step1_desc">Point your camera at a prescription, report, or pill bottle. No typing, no forms.</p>
+            </div>
+          </li>
+          <li class="steps__item">
+            <span class="steps__number" aria-hidden="true">2</span>
+            <div>
+              <h3 data-i18n="step2_title">We read it for you</h3>
+              <p data-i18n="step2_desc">Carebridge scans the text and explains it simply, in your own language — written or spoken aloud.</p>
+            </div>
+          </li>
+          <li class="steps__item">
+            <span class="steps__number" aria-hidden="true">3</span>
+            <div>
+              <h3 data-i18n="step3_title">Stay on track</h3>
+              <p data-i18n="step3_desc">Get medicine reminders, appointment alerts, and directions to the nearest hospital, all in one place.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============================= BUILT FOR YOU ============================= -->
+    <section class="section for" aria-labelledby="for-title">
+      <div class="section__inner">
+        <p class="eyebrow" data-i18n="for_eyebrow">Built For You</p>
+        <h2 id="for-title" data-i18n="for_title">Made for the people who need it most</h2>
+
+        <div class="cards">
+          <article class="card">
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="32" height="32"><circle cx="24" cy="15" r="8" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 42c0-9 7-15 16-15s16 6 16 15" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            </div>
+            <h3 data-i18n="card1_title">Elderly patients</h3>
+            <p data-i18n="card1_desc">Large text, simple steps, and gentle reminders that respect your pace.</p>
+          </article>
+          <article class="card">
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="32" height="32"><path d="M10 38V10a2 2 0 0 1 2-2h18l8 8v22a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M16 22h16M16 29h16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            </div>
+            <h3 data-i18n="card2_title">Low-literacy readers</h3>
+            <p data-i18n="card2_desc">Instructions explained in plain words and read aloud, not just printed.</p>
+          </article>
+          <article class="card">
+            <div class="card__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="32" height="32"><circle cx="24" cy="24" r="17" fill="none" stroke="currentColor" stroke-width="3"/><path d="M7 24h34M24 7c4.5 4.7 7 10.6 7 17s-2.5 12.3-7 17c-4.5-4.7-7-10.6-7-17s2.5-12.3 7-17Z" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+            </div>
+            <h3 data-i18n="card3_title">Non-English speakers</h3>
+            <p data-i18n="card3_desc">Every label and instruction translated into your local language and dialect.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SETTINGS ============================= -->
+    <section class="section settings" id="settings" aria-labelledby="settings-title">
+      <div class="section__inner settings__panel">
+        <p class="eyebrow" data-i18n="settings_eyebrow">Make It Yours</p>
+        <h2 id="settings-title" data-i18n="settings_title">Settings</h2>
+
+        <div class="settings__row">
+          <span class="settings__label" data-i18n="settings_lang_label">Language</span>
+          <p class="settings__hint" data-i18n="settings_lang_hint">Use the language menu in the top navigation bar to switch at any time.</p>
+        </div>
+
+        <div class="settings__row">
+          <span class="settings__label" id="size-label" data-i18n="settings_size_label">Text size</span>
+          <div class="settings__buttons" role="group" aria-labelledby="size-label">
+            <button type="button" class="size-btn" data-size="sm" data-i18n="size_small">Small</button>
+            <button type="button" class="size-btn is-active" data-size="normal" data-i18n="size_normal">Normal</button>
+            <button type="button" class="size-btn" data-size="lg" data-i18n="size_large">Large</button>
+            <button type="button" class="size-btn" data-size="xl" data-i18n="size_xl">Extra Large</button>
+          </div>
+        </div>
+
+        <div class="settings__row">
+          <div class="settings__toggle-text">
+            <span class="settings__label" data-i18n="settings_contrast_label">High contrast mode</span>
+            <p class="settings__hint" data-i18n="settings_contrast_desc">Increases contrast for easier reading in bright light.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="contrast-toggle" />
+            <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Second bridge divider -->
+    <div class="bridge-divider bridge-divider--flip" aria-hidden="true">
+      <svg viewBox="0 0 1440 160" preserveAspectRatio="none">
+        <path class="bridge-divider__deck" d="M0,150 C 260,40 500,10 720,10 C 940,10 1180,40 1440,150" fill="none" stroke-width="6"/>
+        <line class="bridge-divider__pylon" x1="260" y1="150" x2="260" y2="70"/>
+        <line class="bridge-divider__pylon" x1="1180" y1="150" x2="1180" y2="70"/>
+      </svg>
+    </div>
+
+  </main>
+
+  <!-- ============================= FOOTER ============================= -->
+  <footer class="footer">
+    <p class="footer__tagline" data-i18n="footer_tagline">Carebridge — no one is forgotten.</p>
+    <p class="footer__rights" data-i18n="footer_rights">© 2026 Carebridge. Built with care.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+

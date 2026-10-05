@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Care Assessment & Health Summary — Carebridge</title>
+  <meta name="description" content="Personalized Care assessment questionnaire and comprehensive medical summary on Carebridge." />
+
+  <!-- Atkinson Hyperlegible Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="page-care">
+
+  <!-- Skip link -->
+  <a class="skip-link" href="#main" data-i18n="skip_to_content">Skip to main content</a>
+
+  <!-- ============================= NAVIGATION ============================= -->
+  <header class="nav nav--scrolled" id="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__brand">
+        <span class="nav__brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 24" width="30" height="18">
+            <path d="M2 20 C 2 8, 10 2, 20 2 C 30 2, 38 8, 38 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <line x1="8" y1="20" x2="8" y2="13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <line x1="32" y1="20" x2="32" y2="13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Carebridge
+      </a>
+
+      <nav class="nav__links" aria-label="Primary">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="index.html#settings" data-i18n="nav_settings">Settings</a>
+        <a href="care.html" class="is-active" data-i18n="nav_care">Care</a>
+      </nav>
+
+      <div class="nav__lang">
+        <label for="lang-select" class="visually-hidden" data-i18n="settings_lang_label">Language</label>
+        <select id="lang-select" aria-label="Choose language">
+          <option value="en" selected>English</option>
+          <option value="es">Español</option>
+          <option value="hi">हिन्दी</option>
+          <option value="fr">Français</option>
+        </select>
+      </div>
+
+      <div class="nav__auth" id="auth-container">
+        <button type="button" id="auth-trigger" class="btn btn--auth is-logged-in" aria-haspopup="menu" aria-controls="user-dropdown" aria-expanded="false">
+          <span class="auth-avatar" id="auth-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <span id="auth-trigger-label" data-i18n="auth_trigger">Patient</span>
+          <span class="nav__auth-chevron" id="auth-chevron" aria-hidden="true">▼</span>
+        </button>
+
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown" id="user-dropdown" role="menu" hidden>
+          <div class="user-dropdown__header">
+            <div class="user-dropdown__avatar" id="dropdown-avatar">P</div>
+            <div class="user-dropdown__info">
+              <p class="user-dropdown__name" id="dropdown-user-name">Patient Name</p>
+              <p class="user-dropdown__meta" id="dropdown-user-meta">Age: — | Verified Patient</p>
+            </div>
+          </div>
+          <div class="user-dropdown__body">
+            <p class="user-dropdown__addr" id="dropdown-user-addr">—</p>
+          </div>
+          <div class="user-dropdown__actions">
+            <button type="button" class="user-dropdown__item" id="dropdown-switch-btn" role="menuitem">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+              <span data-i18n="dropdown_switch">Switch Account</span>
+            </button>
+            <button type="button" class="user-dropdown__item user-dropdown__item--logout" id="dropdown-logout-btn" role="menuitem">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span data-i18n="dropdown_logout">Log out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================= CARE CONTENT ============================= -->
+  <main id="main" class="care-main">
+    <div class="section__inner care-page-inner">
+
+      <!-- Breadcrumbs / Back navigation -->
+      <div class="care-breadcrumb">
+        <a href="index.html" class="care-back-link">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span data-i18n="back_to_home">Back to Home</span>
+        </a>
+      </div>
+
+      <!-- Patient Banner -->
+      <div class="care-patient-banner" id="care-patient-banner">
+        <div class="care-patient-banner__avatar" id="care-avatar">P</div>
+        <div class="care-patient-banner__details">
+          <h1 class="care-patient-banner__name" id="care-patient-name">Patient Profile</h1>
+          <p class="care-patient-banner__sub" id="care-patient-sub">Age: — | DOB: — | Aadhaar Verified</p>
+        </div>
+        <div class="care-patient-banner__badge">
+          <span class="status-dot"></span> <span data-i18n="status_connected">Carebridge Connected</span>
+        </div>
+      </div>
+
+      <!-- Guest Prompt (shown only if unauthenticated visitor lands here) -->
+      <div class="care-guest-card" id="care-guest-card" hidden>
+        <h2 data-i18n="care_guest_title">Please Sign In or Create an Account</h2>
+        <p data-i18n="care_guest_desc">To access your personalized Care assessment and medical summary, please log in with your account or verify your Aadhaar card.</p>
+        <a href="index.html" class="btn btn--primary" data-i18n="btn_goto_login">Go to Log In / Sign Up &rarr;</a>
+      </div>
+
+      <!-- First-time / In-progress questionnaire -->
+      <div id="care-questionnaire" class="care-questionnaire">
+        <div class="care-wizard-card">
+          <p class="eyebrow" data-i18n="care_eyebrow">Your Care Profile</p>
+          <h2 class="care-section-title" data-i18n="care_title">Care Assessment & Medical History</h2>
+          <p class="care-intro" data-i18n="care_intro">Before your visit, help our clinical team understand your complete medical history and everyday health. You can pause or edit answers at any time.</p>
+          
+          <div class="care-progress">
+            <div class="care-progress__bar"><div class="care-progress__fill" id="care-progress-fill"></div></div>
+            <div class="care-progress__meta">
+              <span class="care-progress__label" id="care-progress-label">Step 1 of 8</span>
+              <span class="care-progress__category" id="care-progress-category">Medical History</span>
+            </div>
+          </div>
+
+          <form id="care-form"></form>
+
+          <div class="care-nav">
+            <button type="button" class="btn btn--ghost-dark" id="care-back-btn">&larr; <span data-i18n="btn_prev_step">Previous</span></button>
+            <button type="button" class="btn btn--primary" id="care-next-btn"><span id="care-next-label" data-i18n="btn_next_step">Next Step &rarr;</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary shown after submission -->
+      <div id="care-summary" class="care-summary" hidden>
+        <div class="care-summary__header">
+          <div>
+            <p class="eyebrow" data-i18n="care_summary_eyebrow">Official Health Record</p>
+            <h2 data-i18n="care_summary_title">Comprehensive Health Summary</h2>
+            <p class="care-summary__subtitle" id="care-summary-timestamp">Generated on —</p>
+          </div>
+          <div class="care-summary__actions">
+            <button type="button" class="btn btn--sm btn--ghost-dark" id="care-print-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              <span data-i18n="btn_print_pdf">Print / Save PDF</span>
+            </button>
+            <button type="button" class="btn btn--sm btn--primary" id="care-edit-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span data-i18n="btn_edit_answers">Edit Answers</span>
+            </button>
+          </div>
+        </div>
+        
+        <div id="care-summary-content" class="care-summary__grid"></div>
+
+        <div class="care-summary-footer">
+          <a href="index.html" class="btn btn--ghost-dark">
+            &larr; <span data-i18n="back_to_home">Back to Home</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================= FOOTER ============================= -->
+  <footer class="footer">
+    <p class="footer__tagline" data-i18n="footer_tagline">Carebridge — no one is forgotten.</p>
+    <p class="footer__rights" data-i18n="footer_rights">© 2026 Carebridge. Built with care.</p>
+  </footer>
+
+  <script src="care.js"></script>
+</body>
+</html>
